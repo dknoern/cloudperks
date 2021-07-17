@@ -1,0 +1,3 @@
+{
+  "app": "mvn exec:java -pl cdk -Dexec.mainClass=com.slalom.cloudperks.cdk.CloudPerksApp"
+}
