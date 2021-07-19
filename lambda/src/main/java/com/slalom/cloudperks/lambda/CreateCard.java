@@ -6,6 +6,9 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -36,14 +39,21 @@ public class CreateCard implements RequestHandler<Map<String,Object>, GatewayRes
     private String createCard(String body) {
         DynamoDbClient ddb = DynamoDbClient.create();
         String tableName= "cards";
-        String primaryKey = "cardsId";
+        String primaryKey = "cardNumber";
         Map<String, AttributeValue> item = new HashMap<>();
-        String id = UUID.randomUUID().toString();
-        item.put(primaryKey, AttributeValue.builder().s(id).build());
+
 
         JsonParser parser =  new JsonParser();
         JsonElement element = parser.parse(body);
         JsonObject jsonObject = element.getAsJsonObject();
+
+        String cardNumber = jsonObject.get("cardNumber").getAsString();
+
+
+        item.put(primaryKey, AttributeValue.builder().s(cardNumber).build());
+
+        jsonObject.addProperty("cardRegisteredDateTime", DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()));
+
         Set<String> keys = jsonObject.keySet();
         for (String key: keys) {
             item.put(key, AttributeValue.builder().s(jsonObject.get(key).getAsString()).build());
@@ -54,7 +64,7 @@ public class CreateCard implements RequestHandler<Map<String,Object>, GatewayRes
                 .item(item)
                 .build();
         PutItemResponse response = ddb.putItem(putItemRequest);
-        return response.toString();
+        return jsonObject.toString();
 
     }
 }

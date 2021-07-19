@@ -9,6 +9,8 @@ import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.dynamodb.TableProps;
+import software.amazon.awscdk.services.kinesis.Stream;
+import software.amazon.awscdk.services.kinesis.StreamProps;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.FunctionProps;
@@ -71,6 +73,9 @@ class CloudPerksStack extends Stack {
         addMethod(members, getMemberFunction,"GET");
         addMethod(points, redeemPointsFunction,"POST");
         addMethod(points, getPointsFunction,"GET");
+
+        Stream cardTransactions = new Stream(this, "card-transactions", StreamProps.builder().streamName("card-transactions").shardCount(1).build());
+        cardTransactions.grantWrite(createTransactionFunction);
     }
 
     private void addMethod(IResource resource, Function function, String method)
